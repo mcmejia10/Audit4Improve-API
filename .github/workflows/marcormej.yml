@@ -1,0 +1,28 @@
+name: Flujo de gestion de Issues marcormej
+on:
+  issues:
+    types: [opened, reopened, edited, labeled, unlabeled, assigned, closed]
+  project_card:
+    types: [moved]
+  workflow_dispatch:
+jobs:
+  Notificar-Cambio-Issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mostrar evento disparador
+        run: |
+          echo "El flujo se ha disparado por el evento ${{ github.event_name }}"
+          echo "Repositorio ${{ github.repository }}"
+          echo "Actor que lo dispara ${{ github.actor }}"
+      - name: Anadir comentario automatico al Issue
+        if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            Gracias por abrir este Issue ${{ github.event.issue.user.login }}.
+            El flujo de trabajo marcormej se ha disparado automaticamente y ha registrado tu peticion.
+            El equipo lo revisara lo antes posible.
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Resumen final
+        run: echo "Estado del trabajo ${{ job.status }}"
